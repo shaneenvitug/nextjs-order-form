@@ -1,23 +1,26 @@
 {
-  "name": "order-form-app",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start -p $PORT"
-  },
-  "dependencies": {
-    "@zeit/next-css": "^1.0.1",
-    "bootstrap": "^4.5.0",
-    "dd-trace": "^0.21.0",
-    "express-opentracing": "^0.1.1",
-    "firebase": "^7.15.0",
-    "formik": "^2.1.4",
-    "next": "9.4.4",
-    "react": "16.13.1",
-    "react-bootstrap": "^1.0.1",
-    "react-dom": "16.13.1",
-    "react-scripts": "^3.4.2"
-  }
+	"name": "order-form-app",
+	"version": "0.1.0",
+	"engines": {
+		"node": "12.x"
+	},
+	"private": true,
+	"scripts": {
+		"dev": "next dev",
+		"build": "next build",
+		"start": "next start -p $PORT"
+	},
+	"dependencies": {
+		"@zeit/next-css": "^1.0.1",
+		"bootstrap": "^4.5.0",
+		"dd-trace": "^0.21.0",
+		"express-opentracing": "^0.1.1",
+		"firebase": "^7.15.0",
+		"formik": "^2.1.4",
+		"next": "9.4.4",
+		"react": "16.13.1",
+		"react-bootstrap": "^1.0.1",
+		"react-dom": "16.13.1",
+		"react-scripts": "^3.4.2"
+	}
 }
