@@ -1,209 +1,190 @@
 import Head from 'next/head'
+import Form from 'react-bootstrap/Form'
+import Button from 'react-bootstrap/Button'
+import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
+import ToggleButton from 'react-bootstrap/ToggleButton'
+import Modal from 'react-bootstrap/Modal'
+import Image from 'react-bootstrap/Image'
+import InputGroup from 'react-bootstrap/InputGroup'
+import { Formik } from 'formik'
+import { db } from '../firebase'
+import Products from '../components/Products'
 
 export default function Home() {
+  const [modalShow, setModalShow] = React.useState(false);
+  const [products, setProducts] = React.useState([{
+    name: '',
+    color: '',
+    size: ''
+  }]);
+
   return (
     <div className="container">
       <Head>
-        <title>Create Next App</title>
+        <title>Order Form | Formula Fashion Clothing</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main>
-        <h1 className="title">
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+      <header>
+      <Image className="logo" src="logo.png" rounded />
+      <div id="h1-container">
+        <h1>Order Form</h1>
+      </div>
+      <p>Hi there! Kindly fill out all the fields below.</p>
+      <small className="text-muted">Disclaimer: Once the form is submitted, the order is final.</small>
+    </header>
+    <Formik
+      initialValues={{
+        name: '',
+        username: '',
+        address: '',
+        mobile: '',
+        paymentMethod: ''
+      }}
+      onSubmit={(values) => {
+        console.log(values)
+        if (!values.paymentMethod) return;
+        setModalShow(true);
+        db.collection('orders').add(values);
+      }}
+    >
+      {({
+        values,
+        errors,
+        touched,
+        handleChange,
+        handleBlur,
+        handleSubmit,
+        handleReset,
+        submitForm,
+        isSubmitting
+      }) => (
+          <Form id="form" onSubmit={handleSubmit}>
+            <Form.Group controlId="formBasicName">
+              <Form.Label>Name</Form.Label>
+              <Form.Control
+                name="name"
+                type="text"
+                placeholder="Your Name"
+                onChange={handleChange}
+                value={values.name}
+                required
+              />
+            </Form.Group>
 
-        <p className="description">
-          Get started by editing <code>pages/index.js</code>
+            <Form.Group controlId="formBasicUsername">
+              <Form.Label>Instagram Username</Form.Label>
+              <InputGroup>
+                <InputGroup.Prepend>
+                  <InputGroup.Text id="inputGroupPrepend">@</InputGroup.Text>
+                </InputGroup.Prepend>
+                <Form.Control
+                  type="text"
+                  placeholder="formulafashionclothing"
+                  aria-describedby="inputGroupPrepend"
+                  name="username"
+                  value={values.username}
+                  onChange={handleChange}
+                  required
+                />
+              </InputGroup>
+            </Form.Group>
+
+            <Form.Group controlId="formBasicAddress">
+              <Form.Label>Delivery Address</Form.Label>
+              <Form.Control as="textarea" rows="2"
+                name="address"
+                type="text"
+                placeholder="e.g 123 Main Street, Angeles City"
+                onChange={handleChange}
+                value={values.address}
+                required
+              />
+              <Form.Text className="text-muted">
+                  We'll never share your details with anyone else.
+              </Form.Text>
+            </Form.Group>
+
+            <Form.Group controlId="formBasicMobile">
+              <Form.Label>Mobile Number</Form.Label>
+              <Form.Control
+                name="mobile"
+                type="number"
+                placeholder="e.g 0906 234 7856"
+                onChange={handleChange}
+                value={values.mobile}
+                required
+              />
+            </Form.Group>
+
+            <Form.Label>Products</Form.Label>
+            <Form.Row>
+              {products.map((product, index) => <Products index={index} handleChange={handleChange}/>)}
+            </Form.Row>
+
+            <Button className="button" variant="outline-danger" type="button"  
+              style={{ marginBottom: ".5rem" }} 
+              onClick={() => {setProducts([...products, {name: '', color: '', size: ''}]) }}
+              >ADD MORE</Button>
+
+            <Button className="button" variant="outline-warning" type="button"
+              style={{ marginBottom: ".5rem" }} 
+              onClick={() => {
+                products.length > 1 && setProducts(prevState => [...prevState.slice(0, -1)]) }}
+              >REMOVE</Button>
+
+            <Form.Group controlId="formBasicPayment">
+              <Form.Label>Pay By</Form.Label>
+              <br />
+              <ToggleButtonGroup name="paymentMethod" type="radio" value={values.paymentMethod}>
+                <ToggleButton className="toggleButton" name="paymentMethod" value="cashondelivery" onChange={handleChange}>
+                  <div className="img-container margin-top">
+                    <img id="cash" src="peso.png" alt="cash logo" />
+                    <p>&nbsp;Cash On Delivery</p>
+                  </div>
+                </ToggleButton>
+                <ToggleButton className="toggleButton" name="paymentMethod" value="bpi" onChange={handleChange}>
+                  <div className="img-container margin-top">
+                    <img id="bpi" src="bpi.jpg" alt="bpi logo" />
+                    <p>&nbsp;deposit</p>
+                  </div>
+                </ToggleButton>
+                <ToggleButton className="toggleButton" name="paymentMethod" value="psbank" onChange={handleChange}>
+                  <div className="img-container">
+                    <img id="psbank" src="psbank.png" alt="ps bank logo" /> 
+                    <p>&nbsp;deposit</p>
+                  </div>
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Form.Group>
+            {!values.paymentMethod && isSubmitting && <div id="error" className="text-muted">Please choose a payment method.</div>}
+
+            <Button className="button" variant="outline-danger" type="submit" block>PLACE YOUR ORDER</Button>
+            <br />
+            <small className="text-muted">
+              By clicking place order, you agree with <strong>proceeding with the payment method within the next hour</strong> (except for Cash).
+            </small>
+          </Form>
+        )}
+    </Formik>
+
+    {/* Modal for when submit button is submitted */}
+
+    <Modal
+      size="lg"
+      aria-labelledby="contained-modal-title-vcenter"
+      centered
+      show={modalShow}
+      onHide={() => setModalShow(false)}
+    >
+      <Modal.Body>
+        <Image className="logo" src="logo.png" rounded />
+        <p id="thanks">Thank you for your order! <span>&#128151;</span></p>
+        <p>
+          You will receive a confirmation message showing the <strong>total cost of your order and number of items</strong>. Instructions for the payment method will be sent as well.
         </p>
-
-        <div className="grid">
-          <a href="https://nextjs.org/docs" className="card">
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className="card">
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className="card"
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="card"
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className="logo" />
-        </a>
-      </footer>
-
-      <style jsx>{`
-        .container {
-          min-height: 100vh;
-          padding: 0 0.5rem;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-        }
-
-        main {
-          padding: 5rem 0;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-        }
-
-        footer {
-          width: 100%;
-          height: 100px;
-          border-top: 1px solid #eaeaea;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        footer img {
-          margin-left: 0.5rem;
-        }
-
-        footer a {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-
-        a {
-          color: inherit;
-          text-decoration: none;
-        }
-
-        .title a {
-          color: #0070f3;
-          text-decoration: none;
-        }
-
-        .title a:hover,
-        .title a:focus,
-        .title a:active {
-          text-decoration: underline;
-        }
-
-        .title {
-          margin: 0;
-          line-height: 1.15;
-          font-size: 4rem;
-        }
-
-        .title,
-        .description {
-          text-align: center;
-        }
-
-        .description {
-          line-height: 1.5;
-          font-size: 1.5rem;
-        }
-
-        code {
-          background: #fafafa;
-          border-radius: 5px;
-          padding: 0.75rem;
-          font-size: 1.1rem;
-          font-family: Menlo, Monaco, Lucida Console, Liberation Mono,
-            DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
-        }
-
-        .grid {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-wrap: wrap;
-
-          max-width: 800px;
-          margin-top: 3rem;
-        }
-
-        .card {
-          margin: 1rem;
-          flex-basis: 45%;
-          padding: 1.5rem;
-          text-align: left;
-          color: inherit;
-          text-decoration: none;
-          border: 1px solid #eaeaea;
-          border-radius: 10px;
-          transition: color 0.15s ease, border-color 0.15s ease;
-        }
-
-        .card:hover,
-        .card:focus,
-        .card:active {
-          color: #0070f3;
-          border-color: #0070f3;
-        }
-
-        .card h3 {
-          margin: 0 0 1rem 0;
-          font-size: 1.5rem;
-        }
-
-        .card p {
-          margin: 0;
-          font-size: 1.25rem;
-          line-height: 1.5;
-        }
-
-        .logo {
-          height: 1em;
-        }
-
-        @media (max-width: 600px) {
-          .grid {
-            width: 100%;
-            flex-direction: column;
-          }
-        }
-      `}</style>
-
-      <style jsx global>{`
-        html,
-        body {
-          padding: 0;
-          margin: 0;
-          font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
-            Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
-            sans-serif;
-        }
-
-        * {
-          box-sizing: border-box;
-        }
-      `}</style>
+      </Modal.Body>
+    </Modal>
     </div>
   )
 }
